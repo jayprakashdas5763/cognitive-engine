@@ -10,6 +10,8 @@ import {
 import { useStore } from '@/store';
 import { motion } from 'framer-motion';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export const ChatArea: React.FC = () => {
   const { messages, addMessage, sidebarOpen, cognitiveOpen, setCognitive } =
     useStore();
@@ -19,41 +21,71 @@ export const ChatArea: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // Add user message
+    const userMessage = input.trim();
+
     addMessage({
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content: userMessage,
       timestamp: new Date(),
     });
 
     setInput('');
     setLoading(true);
 
-    // Simulate cognitive process
     setCognitive({
-      goal: input,
+      goal: userMessage,
       progress: 20,
       thinking: 'Analyzing request...',
     });
 
-    // Simulate assistant response
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
       setCognitive({
-        progress: 100,
-        thinking: 'Ready.',
+        goal: data.goal,
+        currentTask: data.currentTask,
+        thinking: data.thinking,
+        confidence: data.confidence,
+        progress: data.progress,
+        tools: data.tools,
       });
 
       addMessage({
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content:
-          'I understand your request. Let me break this down into actionable steps and execute them systematically.\n\n1. **Analysis**: Understanding the goal\n2. **Planning**: Creating task steps\n3. **Execution**: Running each task\n4. **Synthesis**: Combining results',
+        content: data.response,
+        timestamp: new Date(),
+      });
+    } catch (error) {
+      console.error('Error:', error);
+
+      addMessage({
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `Error: Failed to get response from the agent. ${error instanceof Error ? error.message : 'Unknown error'}`,
         timestamp: new Date(),
       });
 
+      setCognitive({
+        thinking: 'Error occurred',
+        progress: 0,
+      });
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const mainStyle = {
