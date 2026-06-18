@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  @apply transition-colors;
+}
+
+:root {
+  --space: #0a0e27;
+  --surface: #1a1f3a;
+}
+
+body {
+  @apply bg-space text-white;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded hover:bg-white/20;
+}
+
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-blue-500;
+}
