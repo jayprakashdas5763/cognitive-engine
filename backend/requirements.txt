@@ -2,3 +2,11 @@ fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 pydantic>=2.11.0
 python-dotenv>=1.1.0
+
+langchain
+langgraph
+langchain-core
+langchain-community
+langchain-mistralai
+
+tavily-python
